@@ -17,6 +17,11 @@ namespace ConsoleApp1
         public string group;
         public float averagePoints;
 
+        public string GetStudentInfo()
+        {
+            return $"{id} {name} {dateOfBirth} {instute} {course} {group} {averagePoints}";
+        }
+
         public void Print()
         {
             Console.WriteLine($"ID: {id} ФИО: {name} Дата рождения: {dateOfBirth} Институт: {instute} Курс: {course} Группа: {group} Средний балл: {averagePoints}");
@@ -31,7 +36,7 @@ namespace ConsoleApp1
         {
             string input = "";
 
-            Console.WriteLine("\tЗдравствуйте" +
+            Console.WriteLine("\tЗдравствуйте! Введите номер функции или \"stop\" для выхода из программы\n" +
                 "\n1. Вывести список студентов" +
                 "\n2. Добавление студентов" +
                 "\n3. Модификация списка студентов" +
@@ -45,8 +50,9 @@ namespace ConsoleApp1
                 "\n11. Нахождение максимального среднего балла" +
                 "\n12. Нахождение минимального среднего балла" +
                 "\n13. Нахождение среднего балла" +
-                "\n14. Нахождение суммы средних баллов");
-
+                "\n14. Нахождение суммы средних баллов" +
+                "\n15. Сохранить данные в файл");
+                
             while (input != "stop")
             {
                 Console.Write("\nВведите номер функции: ");
@@ -100,6 +106,9 @@ namespace ConsoleApp1
                     case "14":
                         Sum();
                         break;
+                    case "15":
+                        SaveToFile();
+                        break;
                     default:
                         Console.WriteLine($"Упс! Функция \"{input}\" не найдена");
                         break;
@@ -112,8 +121,10 @@ namespace ConsoleApp1
             foreach (Student s in students)
                 if (!this.students.Any(x => x.id == s.id))
                     this.students.Add(s);
+                else
+                    Console.WriteLine($"Студент с ID: {s.id} уже существует в базе и не может быть добавлен повторно");
 
-            Console.WriteLine("Студенты успешно добавлены");
+            Console.WriteLine("Информация о студентах успешно добавлена");
         }
 
         void Modify(List<Student> students)
@@ -150,7 +161,7 @@ namespace ConsoleApp1
                 s.Print();
 
             if(studentsFound.Count == 0)
-                Console.WriteLine("Студенты не найдены");
+                Console.WriteLine("Информации о студентах не найдено");
         }
 
         void Average()
@@ -187,7 +198,27 @@ namespace ConsoleApp1
         }
 
         void SaveToFile()
-        { }
+        {
+            string input;
+
+            Console.Write("Введите путь к файлу: ");
+
+            input = Console.ReadLine();
+
+            File.WriteAllText(input, GetAllStudentsInfo());
+            Console.WriteLine("Информация о студентах успешно сохранена");
+        }
+
+        string GetAllStudentsInfo()
+        {
+            string allInfo = "";
+
+            for(int i = 0; i < students.Count - 1; i++)
+                allInfo += students[i].GetStudentInfo() + "\r\n";
+            allInfo += students[students.Count - 1].GetStudentInfo();
+
+            return allInfo;
+        }
 
         void Print()
         {
@@ -231,19 +262,18 @@ namespace ConsoleApp1
         {
             string input;
 
-            //Console.Clear();
-            Console.WriteLine("Введите данные построчно");
+            Console.WriteLine("Введите данные построчно в формате \"ID Фамилия Имя Отчество ДД.ММ.ГГГГ Аббревиатура ВУЗа Курс Группа Средний балл\" или \"stop\" для окончания ввода");
 
             string array = "";
 
             input = Console.ReadLine();
 
-            while (input != "")
+            while (input != "stop")
             {
                 array += input;
                 input = Console.ReadLine();
 
-                if (input != "")
+                if (input != "stop")
                     array += "\r\n";
             }
 
@@ -254,7 +284,6 @@ namespace ConsoleApp1
         {
             string input;
 
-            //Console.Clear();
             Console.Write("Введите путь к файлу: ");
 
             input = Console.ReadLine();
@@ -267,7 +296,7 @@ namespace ConsoleApp1
             List<Student> studentsParsed = new List<Student>();
 
             foreach (string row in toParse.Split(new string[] { "\r\n" }, StringSplitOptions.None))
-                studentsParsed.Add(ParseStringsToStudent(row.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)));
+                    studentsParsed.Add(ParseStringsToStudent(row.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)));
 
             return studentsParsed;
         }
@@ -296,42 +325,7 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             DB dataBase = new DB();
-            dataBase.students = students;
             dataBase.Menu();
         }
-
-        public static List<Student> students = new List<Student>()
-            {
-                new Student()
-                {
-                    id = "111",
-                    name = "Иванов Иван Иванович",
-                    dateOfBirth = "01.01.2001",
-                    instute = "МИСиС",
-                    course = "1",
-                    group = "БИВТ-19-5",
-                    averagePoints = 90
-                },
-                new Student()
-                {
-                    id = "112",
-                    name = "Петров Петр Петрович",
-                    dateOfBirth = "02.02.2002",
-                    instute = "МИСиС",
-                    course = "1",
-                    group = "БИВТ-19-6",
-                    averagePoints = 80
-                },
-                new Student()
-                {
-                    id = "113",
-                    name = "Абрамов Абрам Абрамович",
-                    dateOfBirth = "03.03.2003",
-                    instute = "МИСиС",
-                    course = "1",
-                    group = "БИВТ-19-6",
-                    averagePoints = 85
-                }
-            };
     }
 }
