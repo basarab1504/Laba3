@@ -11,7 +11,7 @@ namespace ConsoleApp1
     {
         public string id;
         public string name;
-        public string dateOfBirth;
+        public DateTime dateOfBirth;
         public string instute;
         public string course;
         public string group;
@@ -19,12 +19,12 @@ namespace ConsoleApp1
 
         public string GetStudentInfo()
         {
-            return $"{id} {name} {dateOfBirth} {instute} {course} {group} {averagePoints}";
+            return $"{id} {name} {dateOfBirth.ToString("dd.MM.yyyy")} {instute} {course} {group} {averagePoints}";
         }
 
         public void Print()
         {
-            Console.WriteLine($"ID: {id} ФИО: {name} Дата рождения: {dateOfBirth} Институт: {instute} Курс: {course} Группа: {group} Средний балл: {averagePoints}");
+            Console.WriteLine($"ID: {id} ФИО: {name} Дата рождения: {dateOfBirth.ToString("dd.MM.yyyy")} Институт: {instute} Курс: {course} Группа: {group} Средний балл: {averagePoints}");
         }
     }
 
@@ -52,13 +52,13 @@ namespace ConsoleApp1
                 "\n13. Нахождение среднего балла" +
                 "\n14. Нахождение суммы средних баллов" +
                 "\n15. Сохранить данные в файл");
-                
+
             while (input != "stop")
             {
                 Console.Write("\nВведите номер функции: ");
                 input = Console.ReadLine();
 
-                switch(input)
+                switch (input)
                 {
                     case "1":
                         Print();
@@ -73,7 +73,7 @@ namespace ConsoleApp1
                         Delete(StudentsParseService.GetStudents());
                         break;
                     case "5":
-                        Sort((x, y) => x.name.CompareTo(y.name));                        
+                        Sort((x, y) => x.name.CompareTo(y.name));
                         break;
                     case "6":
                         Sort((x, y) => x.dateOfBirth.CompareTo(y.dateOfBirth));
@@ -92,7 +92,7 @@ namespace ConsoleApp1
                     case "10":
                         Console.Write("Введите дату рождения: ");
                         input = Console.ReadLine();
-                        Search(x => x.dateOfBirth == input);
+                        Search(x => x.dateOfBirth == DateTime.Parse(input));
                         break;
                     case "11":
                         Max();
@@ -124,19 +124,22 @@ namespace ConsoleApp1
                 else
                     Console.WriteLine($"Студент с ID: {s.id} уже существует в базе и не может быть добавлен повторно");
 
-            Console.WriteLine("Информация о студентах успешно добавлена");
+            if (students.Count != 0)
+                Console.WriteLine("Информация о студентах успешно добавлена");
         }
 
         void Modify(List<Student> students)
         {
-            foreach(Student s in students)
+            foreach (Student s in students)
             {
                 int indexOfStudentToModify = this.students.FindIndex(x => x.id == s.id);
 
                 if (indexOfStudentToModify != -1)
                     this.students[indexOfStudentToModify] = s;
             }
-            Console.WriteLine("Информация о студентах успешно обновлена");
+
+            if (students.Count != 0)
+                Console.WriteLine("Информация о студентах успешно обновлена");
         }
 
         void Delete(List<Student> students)
@@ -144,7 +147,8 @@ namespace ConsoleApp1
             foreach (Student s in students)
                 this.students.RemoveAll(x => x.id == s.id);
 
-            Console.WriteLine("Информация о студентах успешно удалена");
+            if (students.Count != 0)
+                Console.WriteLine("Информация о студентах успешно удалена");
         }
 
         void Sort(Comparison<Student> comparer)
@@ -160,7 +164,7 @@ namespace ConsoleApp1
             foreach (Student s in studentsFound)
                 s.Print();
 
-            if(studentsFound.Count == 0)
+            if (studentsFound.Count == 0)
                 Console.WriteLine("Информации о студентах не найдено");
         }
 
@@ -177,14 +181,36 @@ namespace ConsoleApp1
 
         void Min()
         {
-            float min = students.Min(x => x.averagePoints);
-            Console.WriteLine($"Минимальный балл: {min}");
+            float min = 0;
+            try
+            {
+                min = students.Min(x => x.averagePoints);
+            }
+            catch
+            {
+                Console.WriteLine("Невозможно выполнить функцию. Список пуст");
+            }
+            finally
+            {
+                Console.WriteLine($"Минимальный балл: {min}");
+            }
         }
 
         void Max()
         {
-            float max = students.Max(x => x.averagePoints);
-            Console.WriteLine($"Максимальный балл: {max}");
+            float max = 0;
+            try
+            {
+                max = students.Max(x => x.averagePoints);
+            }
+            catch
+            {
+                Console.WriteLine("Невозможно выполнить функцию. Список пуст");
+            }
+            finally
+            {
+                Console.WriteLine($"Максимальный балл: {max}");
+            }
         }
 
         void Sum()
@@ -213,10 +239,16 @@ namespace ConsoleApp1
         {
             string allInfo = "";
 
-            for(int i = 0; i < students.Count - 1; i++)
-                allInfo += students[i].GetStudentInfo() + "\r\n";
-            allInfo += students[students.Count - 1].GetStudentInfo();
-
+            try
+            {
+                for (int i = 0; i < students.Count - 1; i++)
+                    allInfo += students[i].GetStudentInfo() + "\r\n";
+                allInfo += students[students.Count - 1].GetStudentInfo();
+            }
+            catch
+            {
+                return allInfo;
+            }
             return allInfo;
         }
 
@@ -242,7 +274,7 @@ namespace ConsoleApp1
 
             string input = Console.ReadLine();
 
-            switch(input)
+            switch (input)
             {
                 case "1":
                     students = ParseStringsToStudents(KeyboardInput());
@@ -262,7 +294,8 @@ namespace ConsoleApp1
         {
             string input;
 
-            Console.WriteLine("Введите данные построчно в формате \"ID Фамилия Имя Отчество ДД.ММ.ГГГГ Аббревиатура ВУЗа Курс Группа Средний балл\" или \"stop\" для окончания ввода");
+            Console.WriteLine("Введите данные построчно в следующем формате: " +
+                "\n\"ID Фамилия Имя (Отчество) ДД.ММ.ГГГГ Аббревиатура ВУЗа Курс Группа Средний балл\" или \"stop\" для окончания ввода");
 
             string array = "";
 
@@ -288,7 +321,17 @@ namespace ConsoleApp1
 
             input = Console.ReadLine();
 
-            return File.ReadAllText(input);
+            string text = "";
+
+            try
+            {
+                text = File.ReadAllText(input);
+            }
+            catch
+            {
+                Console.WriteLine("Файл не найден");
+            }
+            return text;
         }
 
         static List<Student> ParseStringsToStudents(string toParse)
@@ -296,27 +339,44 @@ namespace ConsoleApp1
             List<Student> studentsParsed = new List<Student>();
 
             foreach (string row in toParse.Split(new string[] { "\r\n" }, StringSplitOptions.None))
-                    studentsParsed.Add(ParseStringsToStudent(row.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)));
+            {
+                Student parsedStudent;
+                if (TryParseStringsToStudent(row.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries), out parsedStudent))
+                    studentsParsed.Add(parsedStudent);
+            }
 
             return studentsParsed;
         }
 
-        static Student ParseStringsToStudent(string[] toParse)
+        static bool TryParseStringsToStudent(string[] toParse, out Student student)
         {
-            Student student = new Student();
+            student = new Student();
 
-            if (toParse.Length != 9)
-                return student;
+            try
+            {
+                student.id = toParse[0];
 
-            student.id = toParse[0];
-            student.name = toParse[1] + " " + toParse[2] + " " + toParse[3];
-            student.dateOfBirth = toParse[4];
-            student.instute = toParse[5];
-            student.course = toParse[6];
-            student.group = toParse[7];
-            student.averagePoints = float.Parse(toParse[8]);
+                int i;
 
-            return student;
+                for (i = 1; i < toParse.Length; i++)
+                    if (!toParse[i].Contains("."))
+                        student.name += toParse[i] + " ";
+                    else
+                        break;
+                student.name = student.name.Remove(student.name.Length - 1);
+
+                student.dateOfBirth = DateTime.Parse(toParse[i]);
+                student.instute = toParse[i + 1];
+                student.course = toParse[i + 2];
+                student.group = toParse[i + 3];
+                student.averagePoints = float.Parse(toParse[i + 4]);
+            }
+            catch
+            {
+                Console.WriteLine("Некорректной ввод");
+                return false;
+            }
+            return true;
         }
     }
 
