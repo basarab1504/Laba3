@@ -17,6 +17,56 @@ namespace ConsoleApp1
         public string group;
         public float averagePoints;
 
+        public void Modify()
+        {
+            string input = "";
+
+            Console.WriteLine($"\tЗдравствуйте! Какую информацию о студенте \"{id}: {name}\" вы хотите изменить?" +
+            "\n1. ФИО" +
+            "\n2. Дата рождения" +
+            "\n3. Институт" +
+            "\n4. Курс" +
+            "\n5. Группа" +
+            "\n6. Средний балл");
+
+            while (input != "stop")
+            {
+                input = Console.ReadLine();
+
+                Console.Write("Введите значение: ");
+                switch (input)
+                {
+                    case "1":
+                        name = Console.ReadLine();
+                        break;
+                    case "2":
+                        dateOfBirth = DateTime.TryParse(Console.ReadLine(), out DateTime date) ? date : dateOfBirth;
+                        break;
+                    case "3":
+                        instute = Console.ReadLine();
+                        break;
+                    case "4":
+                        course = Console.ReadLine();
+                        break;
+                    case "5":
+                        course = Console.ReadLine();
+                        break;
+                    case "6":
+                        group = Console.ReadLine();
+                        break;
+                    case "7":
+                        averagePoints = int.TryParse(Console.ReadLine(), out int points) ? points : averagePoints;
+                        break;
+                    case "stop":
+                        Console.WriteLine();
+                        return;
+                    default:
+                        Console.WriteLine($"Упс! Функция \"{input}\" не найдена");
+                        break;
+                }
+            }
+        }
+
         public string GetStudentInfo()
         {
             return $"{id} {name} {dateOfBirth.ToString("dd.MM.yyyy")} {instute} {course} {group} {averagePoints}";
@@ -61,7 +111,7 @@ namespace ConsoleApp1
                 switch (input)
                 {
                     case "1":
-                        Print();
+                        Print(students);
                         break;
                     case "2":
                         Add(StudentsParseService.GetStudents());
@@ -87,12 +137,12 @@ namespace ConsoleApp1
                     case "9":
                         Console.Write("Введите ФИО: ");
                         input = Console.ReadLine();
-                        Search(x => x.name == input);
+                        Print(Search(x => x.name == input));
                         break;
                     case "10":
                         Console.Write("Введите дату рождения: ");
                         input = Console.ReadLine();
-                        Search(x => x.dateOfBirth == DateTime.Parse(input));
+                        Print(Search(x => x.dateOfBirth == DateTime.Parse(input)));
                         break;
                     case "11":
                         Max();
@@ -135,7 +185,7 @@ namespace ConsoleApp1
                 int indexOfStudentToModify = this.students.FindIndex(x => x.id == s.id);
 
                 if (indexOfStudentToModify != -1)
-                    this.students[indexOfStudentToModify] = s;
+                    this.students[indexOfStudentToModify].Modify();
             }
 
             if (students.Count != 0)
@@ -157,15 +207,9 @@ namespace ConsoleApp1
             Console.WriteLine("Сортировка успешно завершена");
         }
 
-        void Search(Predicate<Student> predicate)
+        List<Student> Search(Predicate<Student> predicate)
         {
-            List<Student> studentsFound = students.FindAll(predicate);
-
-            foreach (Student s in studentsFound)
-                s.Print();
-
-            if (studentsFound.Count == 0)
-                Console.WriteLine("Информации о студентах не найдено");
+            return students.FindAll(predicate);
         }
 
         void Average()
@@ -252,7 +296,7 @@ namespace ConsoleApp1
             return allInfo;
         }
 
-        void Print()
+        void Print(List<Student> students)
         {
             foreach (Student s in students)
                 s.Print();
